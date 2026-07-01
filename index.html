@@ -17,8 +17,8 @@
 <body>
   <div class="container">
     <h2 style="text-align: center;">個人通訊錄資料</h2>
-    <p style="text-align: center; color: #666; font-size: 14px; margin-bottom: 20px;">
-      請填寫您的最新資料，系統將自動保存並更新至班級通訊錄。
+    <p color: #666; font-size: 14px; margin-bottom: 20px;">
+      請填寫您的最新資料，系統將自動更新至班級通訊錄。
     </p>
     <p id="status">啟動中...</p>
     
@@ -66,7 +66,7 @@
           document.getElementById('area').value = data.area;
           document.getElementById('note').value = data.note;
         }
-        // document.getElementById('status').innerText = "✅ 資料已載入";
+        document.getElementById('status').innerText = "✅ 資料已載入";
         document.getElementById('submitBtn').disabled = false;
       });
     }
