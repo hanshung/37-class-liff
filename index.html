@@ -38,17 +38,26 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzNzbz_aZmhUzbfQltExPpwigJZiVfM8A2JmFZkT7Z7buyE4pA3QtvIFQzwVi-WvMAx9A/exec"; 
     let userId = "";
 
+
     window.onload = function() {
+      document.getElementById('status').innerText = "1. 正在初始化 LIFF...";
       liff.init({ liffId: "2010566306-8eQjMdWa" }).then(() => {
+        document.getElementById('status').innerText = "2. LIFF 初始化成功，正在登入...";
         if (!liff.isLoggedIn()) { liff.login(); } 
         else {
+          document.getElementById('status').innerText = "3. 已登入，正在擷取使用者 ID...";
           liff.getProfile().then(profile => {
             userId = profile.userId;
+            document.getElementById('status').innerText = "4. 已抓到 ID，正在連線資料庫...";
             fetchExistingData();
           });
         }
+      }).catch(err => {
+        document.getElementById('status').innerText = "❌ LIFF 錯誤: " + err.message;
       });
     };
+    
+
 
     function fetchExistingData() {
       const params = new URLSearchParams({ action: 'getUser', uid: userId });
