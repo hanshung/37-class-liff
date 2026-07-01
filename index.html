@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>37班同學會通訊錄</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background-color: #f4f5f7; }
-    .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    input, textarea { width: 100%; padding: 10px; margin: 8px 0 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-    button { background-color: #06C755; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 20px; background-color: #f4f5f7; }
+    .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto; }
+    label { display: block; font-weight: bold; margin-top: 15px; color: #333; }
+    input, textarea { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+    button { background-color: #06C755; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 18px; font-weight: bold; margin-top: 20px; }
     button:disabled { background-color: #ccc; }
-    #status { color: #555; font-weight: bold; margin-bottom: 15px; }
+    #status { color: #06C755; font-weight: bold; text-align: center; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -19,45 +20,36 @@
     <p id="status">啟動中...</p>
     
     <label>姓名：</label>
-    <input type="text" id="name">
+    <input type="text" id="name" placeholder="請輸入本名">
     <label>聯絡電話：</label>
-    <input type="tel" id="phone">
+    <input type="tel" id="phone" placeholder="0912-345678">
     <label>E-mail：</label>
-    <input type="email" id="email">
+    <input type="email" id="email" placeholder="example@gmail.com">
     <label>居住區域：</label>
-    <input type="text" id="area">
+    <input type="text" id="area" placeholder="例如：新北市新莊區">
     <label>近況分享：</label>
-    <textarea id="note" rows="4"></textarea>
+    <textarea id="note" rows="4" placeholder="跟大家分享一下近況吧！"></textarea>
     
     <button id="submitBtn" onclick="saveData()" disabled>儲存資料</button>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    // ⚠️ 請填入您最新的 GAS Web App 網址 (開頭為 https://script.google.com/...)
+    // ⚠️ 請務必換成您 GAS 部署後得到的 Web App 網址 (開頭 https://script.google.com/...)
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzNzbz_aZmhUzbfQltExPpwigJZiVfM8A2JmFZkT7Z7buyE4pA3QtvIFQzwVi-WvMAx9A/exec"; 
     let userId = "";
 
-
     window.onload = function() {
-      document.getElementById('status').innerText = "1. 正在初始化 LIFF...";
       liff.init({ liffId: "2010566306-8eQjMdWa" }).then(() => {
-        document.getElementById('status').innerText = "2. LIFF 初始化成功，正在登入...";
         if (!liff.isLoggedIn()) { liff.login(); } 
         else {
-          document.getElementById('status').innerText = "3. 已登入，正在擷取使用者 ID...";
           liff.getProfile().then(profile => {
             userId = profile.userId;
-            document.getElementById('status').innerText = "4. 已抓到 ID，正在連線資料庫...";
             fetchExistingData();
           });
         }
-      }).catch(err => {
-        document.getElementById('status').innerText = "❌ LIFF 錯誤: " + err.message;
-      });
+      }).catch(err => document.getElementById('status').innerText = "❌ 初始化失敗");
     };
-    
-
 
     function fetchExistingData() {
       const params = new URLSearchParams({ action: 'getUser', uid: userId });
@@ -78,6 +70,7 @@
 
     function saveData() {
       document.getElementById('submitBtn').disabled = true;
+      document.getElementById('submitBtn').innerText = "儲存中...";
       const params = new URLSearchParams({
         action: 'updateUser',
         uid: userId,
