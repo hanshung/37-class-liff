@@ -98,7 +98,6 @@
 
       fetch(GAS_URL, {
         method: 'POST',
-        mode: 'no-cors', // 加上這一行可以避開很多瀏覽器的跨網域檢查錯誤
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload)
       })
