@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>37班同學會通訊錄</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background-color: #f4f5f7; }
+    .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    input, textarea { width: 100%; padding: 10px; margin: 8px 0 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    button { background-color: #06C755; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
+    button:disabled { background-color: #ccc; }
+    #status { color: #d9534f; font-weight: bold; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>我的通訊錄資料</h2>
+    <p id="status">系統啟動中，準備載入 LIFF...</p>
+    
+    <label>姓名：</label>
+    <input type="text" id="name" placeholder="請輸入本名">
+    <label>聯絡電話：</label>
+    <input type="tel" id="phone" placeholder="0912-345678">
+    <label>E-mail：</label>
+    <input type="email" id="email" placeholder="example@gmail.com">
+    <label>居住區域：</label>
+    <input type="text" id="area" placeholder="例如：新北市新莊區">
+    <label>近況分享：</label>
+    <textarea id="note" rows="4" placeholder="跟大家分享一下近況吧！"></textarea>
+    
+    <button id="submitBtn" onclick="saveData()" disabled>儲存資料</button>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    // ⚠️ 1. 請將下方替換為您在步驟一重新部署後取得的 GAS Web App 網址
+    const GAS_URL = "您的_GAS_網頁應用程式網址"; 
+    let userId = "";
+
+    window.onload = function() {
+      // ⚠️ 2. LIFF ID 已為您設定好
+      liff.init({ liffId: "2010566306-8eQjMdWa" })
+        .then(() => {
+          if (!liff.isLoggedIn()) {
+            document.getElementById('status').innerText = "未登入，跳轉授權中...";
+            liff.login();
+          } else {
+            document.getElementById('status').innerText = "已登入，讀取資料中...";
+            liff.getProfile().then(profile => {
+              userId = profile.userId;
+              document.getElementById('status').innerText = `你好，${profile.displayName}！\n正在連線資料庫...`;
+              fetchExistingData(); 
+            });
+          }
+        }).catch(err => {
+          document.getElementById('status').innerText = "❌ LIFF 初始化失敗：" + err.message;
+        });
+    };
+
+    function fetchExistingData() {
+      // 註：為了避免 CORS 錯誤，必須使用 text/plain 發送請求
+      fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'getUser', uid: userId })
+      })
+      .then(res => res.json())
+      .then(response => {
+        if (response.found) {
+          document.getElementById('name').value = response.name;
+          document.getElementById('phone').value = response.phone;
+          document.getElementById('email').value = response.email;
+          document.getElementById('area').value = response.area;
+          document.getElementById('note').value = response.note;
+        }
+        document.getElementById('status').innerText = "✅ 資料庫連線成功，請更新資料。";
+        document.getElementById('submitBtn').disabled = false;
+      })
+      .catch(err => {
+         document.getElementById('status').innerText = "❌ 讀取資料失敗：" + err.message;
+      });
+    }
+
+    function saveData() {
+      document.getElementById('submitBtn').disabled = true;
+      document.getElementById('submitBtn').innerText = "儲存中...";
+      
+      const payload = {
+        action: 'updateUser',
+        uid: userId,
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        area: document.getElementById('area').value,
+        note: document.getElementById('note').value
+      };
+
+      fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(response => {
+        if(response.success) {
+          alert(response.message);
+          liff.closeWindow();
+        } else {
+          alert("❌ 儲存失敗：" + response.message);
+          document.getElementById('submitBtn').innerText = "重新儲存";
+          document.getElementById('submitBtn').disabled = false;
+        }
+      })
+      .catch(err => {
+        alert("❌ 連線失敗：" + err.message);
+        document.getElementById('submitBtn').innerText = "重新儲存";
+        document.getElementById('submitBtn').disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>
